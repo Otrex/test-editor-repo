@@ -1,5 +1,7 @@
 <?php
 
+require "vendor/autoload.php";
+
 use Dotenv\Dotenv;
 
 (function() {
@@ -21,4 +23,10 @@ function clog($args) {
   echo "<pre>";
   echo json_encode([ 'message' => $args ]);
   echo "</pre>";
+}
+
+function strToBool($str) {
+  if (!$str) return false;
+  if (strtolower($str) == 'true') return true;
+  return false;
 }
