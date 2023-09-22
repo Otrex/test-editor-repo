@@ -1,5 +1,6 @@
 node_modules
 *.css.map
 *.js.map
-vendor
 .env
+
+/vendor/

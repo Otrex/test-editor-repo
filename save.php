@@ -58,6 +58,7 @@ if ($action) {
 	//file manager actions, delete and rename
 	switch ($action) {
 		case 'rename':
+			$duplicate = strToBool();
 			$newfile = sanitizeFileName($_POST['newfile'], false);
 			if ($file && $newfile) {
 				if (rename($file, $newfile)) {
