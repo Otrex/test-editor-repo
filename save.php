@@ -1,4 +1,6 @@
 <?php
+
+require "barrel.php";
 /*
 Copyright 2017 Ziadin Givan
 
@@ -18,17 +20,6 @@ https://github.com/givanz/VvvebJs
 */
 
 define('MAX_FILE_LIMIT', 1024 * 1024 * 2);//2 Megabytes max html file size
-
-function sanitizeFileName($file, $allowedExtension = 'html') {
-	//sanitize, remove double dot .. and remove get parameters if any
-	$file = __DIR__ . '/' . preg_replace('@\?.*$@' , '', preg_replace('@\.{2,}@' , '', preg_replace('@[^\/\\a-zA-Z0-9\-\._]@', '', $file)));
-	
-	//allow only .html extension
-	if ($allowedExtension) {
-		$file = preg_replace('/\.[^.]+$/', '', $file) . ".$allowedExtension";
-	}
-	return $file;
-}
 
 function showError($error) {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
@@ -58,13 +49,31 @@ if ($action) {
 	//file manager actions, delete and rename
 	switch ($action) {
 		case 'rename':
-			$duplicate = strToBool();
+			$duplicate = strToBool($_POST['duplicate']);
 			$newfile = sanitizeFileName($_POST['newfile'], false);
+
+			$new_dir = dirname($newfile);
+			$old_dir = dirname($file);
+			
 			if ($file && $newfile) {
-				if (rename($file, $newfile)) {
-					echo "File '$file' renamed to '$newfile'";
+				if ($duplicate) {
+					if (!is_dir($new_dir)) mkdir($new_dir, 0777, true);
+					$is_working = false;
+					foreach (scandir($old_dir) as $f) {
+						if ($f == '.' || $f == '..' || pathinfo($file)['filename'] == $f) continue; // Ignore hidden files
+						$is_working = copy($old_dir.'/'.$f, $new_dir.'/'.$f);
+					}
+					if (copy($file, $newfile)) {
+						echo "File '$file' copied to '$newfile'";
+					} else {
+						showError("Error copied file '$file' renamed to '$newfile'");
+					}
 				} else {
-					showError("Error renaming file '$file' renamed to '$newfile'");
+					if (rename($file, $newfile)) {
+						echo "File '$file' renamed to '$newfile'";
+					} else {
+						showError("Error renaming file '$file' renamed to '$newfile'");
+					}
 				}
 			}
 		break;

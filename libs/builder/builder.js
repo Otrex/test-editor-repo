@@ -2231,8 +2231,13 @@ Vvveb.Gui = {
 			});			
 
 			data['title']  = data['file'].replace('/', '').replace('.html', '');
-			var name = data['name'] = data['folder'].replace('/', '_') + "-" + data['title'];
-			data['url']  = data['file'] = data['folder'] + "/" + data['file'];
+			var name = data['name'] =  data['folder'] === '/' 
+				? PAGE_KEY +'/'+ data['title'] 
+				: PAGE_KEY +'/'+ data['folder'].replace('/', '_') + "-" + data['title'];
+			data['url']  = data['file'] = data['folder'] === '/' 
+				? PAGE_KEY +'/' + data['file'] 
+				: PAGE_KEY +'/'+ data['folder'] + "/" + data['file'];
+			data['folder'] = PAGE_KEY.split("/")[1];
 			
 			Vvveb.FileManager.addPage(data.name, data);
 			e.preventDefault();
@@ -3005,12 +3010,23 @@ Vvveb.FileManager = {
 	renamePage: function(element, e, duplicate = false) {
 		let page = element[0].dataset;
 		let newfile = prompt(`Enter new file name for "${page.file}"`, page.file);
+		newfile = newfile.indexOf(window.PAGE_KEY) === 0 
+			? newfile 
+			: window.PAGE_KEY + "/" + newfile
 		let _self = this;
+		if (!duplicate && page.file.indexOf(DEFAULT_TEMPLATE) === 0) {
+			alert("You are not allowed to rename this file");
+			return;
+		}
 		if (newfile) {
 			$.ajax({
 				type: "POST",
 				url: renameUrl,//set your server side save script url
-				data: {file:page.file, newfile:newfile, duplicate},
+				data: {
+					file:page.file, 
+					newfile:newfile, 
+					duplicate
+				},
 				success: function (data, text) {
 					let bg = "bg-success";
 					if (data.success) {		
@@ -3027,6 +3043,7 @@ Vvveb.FileManager = {
 						let data = _self.pages[page.page];
 						data["file"] = newfile;
 						data["title"] = newName;
+						data["folder"] = PAGE_KEY.split("/").at(-1);
 						Vvveb.FileManager.addPage(baseName, data);
 					} else {
 					_self.pages[page.page]["file"] = newfile;
