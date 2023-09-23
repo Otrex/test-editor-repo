@@ -5,7 +5,7 @@ require "barrel.php";
 //include 'editor.html';
 $html = file_get_contents('editor.html');
 
-$pageKey = $_GET['site'] ?? 'page';
+$pageKey = str_replace('.', '/', ($_GET['site'] ?? 'page'));
 //search for html files in demo and my-pages folders
 $htmlFiles = glob('{my-pages/*.html,demo/*\/*.html,demo/*.html,'.$pageKey.'/*.html,'.$pageKey.'/*\/*.html}',  GLOB_BRACE);
 $files = '';
@@ -25,7 +25,7 @@ foreach ($htmlFiles as $file) {
     $filename = $subfolder;
   }
 
-  
+
   $url = $pathInfo['dirname'] . '/' . $pathInfo['basename'];
   $name = $filename;
   $title = ucfirst($name);
