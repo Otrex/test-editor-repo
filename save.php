@@ -29,6 +29,7 @@ function showError($error) {
 $html   = '';
 $file   = '';
 $action = '';
+$htaccess = file_get_contents('_.htaccess');
 
 if (isset($_POST['startTemplateUrl']) && !empty($_POST['startTemplateUrl'])) {
 	$startTemplateUrl = sanitizeFileName($_POST['startTemplateUrl']);
@@ -57,7 +58,10 @@ if ($action) {
 			
 			if ($file && $newfile) {
 				if ($duplicate) {
-					if (!is_dir($new_dir)) mkdir($new_dir, 0777, true);
+					if (!is_dir($new_dir)){
+						mkdir($new_dir, 0777, true);
+						file_put_contents($new_dir . '/.htaccess', $htaccess);
+					}
 					$is_working = false;
 					foreach (scandir($old_dir) as $f) {
 						if ($f == '.' || $f == '..' || pathinfo($file)['filename'] == $f) continue; // Ignore hidden files
@@ -125,6 +129,8 @@ if ($action) {
 			if (!is_dir($dir)) {
 				echo "$dir folder does not exist\n";
 				if (mkdir($dir, 0777, true)) {
+					echo $dir . '/.htaccess';
+					file_put_contents($dir . '/.htaccess', $htaccess);
 					echo "$dir folder was created\n";
 				} else {
 					showError("Error creating folder '$dir'\n");
